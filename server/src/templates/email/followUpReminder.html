@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Follow-up Reminder</title>
+</head>
+<body style="margin:0;padding:0;background:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;padding:40px 0;">
+    <tr>
+      <td align="center">
+        <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08);">
+          <!-- Header -->
+          <tr>
+            <td style="background:#4f46e5;padding:28px 40px;">
+              <span style="color:#ffffff;font-size:20px;font-weight:700;letter-spacing:-.5px;">CareerPilot</span>
+            </td>
+          </tr>
+          <!-- Body -->
+          <tr>
+            <td style="padding:36px 40px 24px;">
+              <p style="margin:0 0 8px;font-size:22px;font-weight:700;color:#0f172a;">
+                Time to follow up! 👋
+              </p>
+              <p style="margin:0 0 24px;font-size:15px;color:#475569;line-height:1.6;">
+                Hi {{name}}, today is your scheduled follow-up date for your application to
+                <strong style="color:#0f172a;">{{company}}</strong> for the
+                <strong style="color:#0f172a;">{{role}}</strong> position.
+              </p>
+              <div style="background:#f1f5f9;border-radius:8px;padding:20px 24px;margin-bottom:24px;">
+                <p style="margin:0 0 6px;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#64748b;">
+                  Quick tip
+                </p>
+                <p style="margin:0;font-size:14px;color:#334155;line-height:1.6;">
+                  A concise follow-up email referencing your interview or application
+                  can put you back on the hiring manager's radar. Keep it under 3 sentences.
+                </p>
+              </div>
+              <a href="{{appUrl}}/applications/{{applicationId}}"
+                 style="display:inline-block;background:#4f46e5;color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;border-radius:8px;padding:12px 24px;">
+                View Application →
+              </a>
+            </td>
+          </tr>
+          <!-- Footer -->
+          <tr>
+            <td style="padding:20px 40px;border-top:1px solid #e2e8f0;">
+              <p style="margin:0;font-size:12px;color:#94a3b8;">
+                You're receiving this because you enabled follow-up reminders in CareerPilot.
+                <a href="{{appUrl}}/settings" style="color:#6366f1;text-decoration:none;">Manage preferences</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

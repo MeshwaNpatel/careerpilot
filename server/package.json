@@ -1,0 +1,50 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "CareerPilot API server",
+  "main": "server.js",
+  "scripts": {
+    "dev": "nodemon server.js",
+    "start": "node server.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1068.0",
+    "@aws-sdk/s3-request-presigner": "^3.1068.0",
+    "@google/generative-ai": "^0.24.1",
+    "@prisma/client": "6.19.3",
+    "@sendgrid/mail": "^8.1.6",
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.5.2",
+    "express-session": "^1.19.0",
+    "groq-sdk": "^1.3.0",
+    "helmet": "^8.2.0",
+    "ioredis": "^5.11.1",
+    "jsonwebtoken": "^9.0.3",
+    "morgan": "^1.11.0",
+    "multer": "^2.2.0",
+    "node-cron": "^4.2.1",
+    "openai": "^6.42.0",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0",
+    "passport-jwt": "^4.0.1",
+    "pdf-parse": "^1.1.1",
+    "stripe": "^22.2.1",
+    "winston": "^3.19.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14",
+    "prisma": "6.19.3"
+  }
+}

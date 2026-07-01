@@ -1,0 +1,263 @@
+// CareerPilot database schema
+// See project_brief.md section 10 for the full design reference.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  user
+  admin
+}
+
+enum Plan {
+  free
+  pro
+  premium
+}
+
+enum SubscriptionStatus {
+  active
+  cancelled
+  past_due
+}
+
+enum ApplicationStatus {
+  applied
+  screening
+  interview
+  offer
+  rejected
+}
+
+enum InterviewFormat {
+  video
+  phone
+  onsite
+  take_home
+}
+
+enum InterviewOutcome {
+  passed
+  failed
+  pending
+  cancelled
+}
+
+enum NotificationType {
+  follow_up_reminder
+  broadcast
+  system
+}
+
+enum AiFeature {
+  resume_review
+  cover_letter
+  interview_questions
+}
+
+model User {
+  id             String    @id @default(uuid())
+  email          String    @unique @db.VarChar(255)
+  passwordHash   String?   @map("password_hash") @db.VarChar(255)
+  name           String    @db.VarChar(255)
+  avatarUrl      String?   @map("avatar_url") @db.VarChar(500)
+  role           Role      @default(user)
+  oauthProvider  String?   @map("oauth_provider") @db.VarChar(50)
+  oauthId        String?   @map("oauth_id") @db.VarChar(255)
+  isActive              Boolean   @default(true) @map("is_active")
+  emailNotifications    Boolean   @default(true) @map("email_notifications")
+  followUpReminders     Boolean   @default(true) @map("follow_up_reminders")
+  passwordResetToken    String?   @unique @map("password_reset_token") @db.VarChar(255)
+  passwordResetExpiry   DateTime? @map("password_reset_expiry")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  lastActiveAt          DateTime? @map("last_active_at")
+
+  subscription  Subscription?
+  applications  Application[]
+  resumes       Resume[]
+  contacts      Contact[]
+  notifications Notification[]
+  aiRequests    AiRequest[]
+  savedJobs     SavedJob[]
+  activityLogs  ActivityLog[]
+
+  @@map("users")
+}
+
+model Subscription {
+  id                String             @id @default(uuid())
+  userId            String             @unique @map("user_id")
+  plan              Plan               @default(free)
+  status            SubscriptionStatus @default(active)
+  stripeCustomerId  String?            @map("stripe_customer_id") @db.VarChar(255)
+  stripeSubId       String?            @map("stripe_sub_id") @db.VarChar(255)
+  currentPeriodEnd  DateTime?          @map("current_period_end")
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+model Application {
+  id             String            @id @default(uuid())
+  userId         String            @map("user_id")
+  resumeId       String?           @map("resume_id")
+  company        String            @db.VarChar(255)
+  roleTitle      String            @map("role_title") @db.VarChar(255)
+  status         ApplicationStatus @default(applied)
+  jobUrl         String?           @map("job_url") @db.VarChar(500)
+  source         String?           @db.VarChar(100)
+  salaryMin      Int?              @map("salary_min")
+  salaryMax      Int?              @map("salary_max")
+  salaryCurrency String            @default("USD") @map("salary_currency") @db.VarChar(10)
+  appliedAt      DateTime          @map("applied_at") @db.Date
+  followUpDate   DateTime?         @map("follow_up_date") @db.Date
+  notes              String?
+  coverLetterText    String?           @map("cover_letter_text")
+  isArchived         Boolean           @default(false) @map("is_archived")
+  createdAt      DateTime          @default(now()) @map("created_at")
+  updatedAt      DateTime          @updatedAt @map("updated_at")
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resume       Resume?       @relation(fields: [resumeId], references: [id], onDelete: SetNull)
+  interviews   Interview[]
+  contacts     Contact[]
+  aiRequests   AiRequest[]
+  activityLogs ActivityLog[]
+
+  @@index([userId], map: "idx_applications_user_id")
+  @@index([status], map: "idx_applications_status")
+  @@index([followUpDate], map: "idx_applications_follow_up")
+  @@map("applications")
+}
+
+model Interview {
+  id               String            @id @default(uuid())
+  applicationId    String            @map("application_id")
+  roundName        String?           @map("round_name") @db.VarChar(100)
+  format           InterviewFormat?
+  scheduledAt      DateTime?         @map("scheduled_at")
+  durationMinutes  Int?              @map("duration_minutes")
+  interviewerName  String?           @map("interviewer_name") @db.VarChar(255)
+  outcome          InterviewOutcome? @default(pending)
+  notes            String?
+  createdAt        DateTime          @default(now()) @map("created_at")
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@map("interviews")
+}
+
+model Resume {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  label       String   @db.VarChar(255)
+  fileUrl     String   @map("file_url") @db.VarChar(500)
+  fileKey     String   @map("file_key") @db.VarChar(500)
+  version     String?  @db.VarChar(50)
+  fileSizeKb  Int?     @map("file_size_kb")
+  uploadedAt  DateTime @default(now()) @map("uploaded_at")
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  applications Application[]
+
+  @@map("resumes")
+}
+
+model Contact {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  applicationId String?  @map("application_id")
+  name          String   @db.VarChar(255)
+  roleTitle     String?  @map("role_title") @db.VarChar(255)
+  email         String?  @db.VarChar(255)
+  linkedinUrl   String?  @map("linkedin_url") @db.VarChar(500)
+  phone         String?  @db.VarChar(50)
+  notes         String?
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  application Application? @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+
+  @@map("contacts")
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String           @map("user_id")
+  type      NotificationType
+  title     String?          @db.VarChar(255)
+  message   String?
+  isRead    Boolean          @default(false) @map("is_read")
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "idx_notifications_user_unread")
+  @@map("notifications")
+}
+
+model SavedJob {
+  id          String    @id @default(uuid())
+  userId      String    @map("user_id")
+  externalId  String    @map("external_id")
+  title       String
+  company     String
+  location    String    @default("")
+  url         String
+  source      String
+  salaryMin   Int?      @map("salary_min")
+  salaryMax   Int?      @map("salary_max")
+  salary      String?
+  description String?
+  jobType     String?   @map("job_type")
+  isRemote    Boolean   @default(false) @map("is_remote")
+  postedAt    DateTime? @map("posted_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, externalId])
+  @@index([userId], map: "idx_saved_jobs_user")
+  @@map("saved_jobs")
+}
+
+model AiRequest {
+  id            String    @id @default(uuid())
+  userId        String    @map("user_id")
+  applicationId String?   @map("application_id")
+  feature       AiFeature
+  tokensUsed    Int?      @map("tokens_used")
+  costUsd       Decimal?  @map("cost_usd") @db.Decimal(8, 6)
+  responseData  Json?     @map("response_data")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  application Application? @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt], map: "idx_ai_requests_user_month")
+  @@map("ai_requests")
+}
+
+model ActivityLog {
+  id            String      @id @default(uuid())
+  applicationId String      @map("application_id")
+  userId        String      @map("user_id")
+  type          String      @db.VarChar(50)
+  metadata      Json        @default("{}")
+  createdAt     DateTime    @default(now()) @map("created_at")
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId], map: "idx_activity_logs_application_id")
+  @@map("activity_logs")
+}
